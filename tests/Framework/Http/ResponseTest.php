@@ -2,6 +2,7 @@
 namespace Tests\Framework\Http;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\ServerRequestInterface;
 use Framework\Http\Response;
 
 
