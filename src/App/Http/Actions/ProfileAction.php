@@ -8,8 +8,9 @@ use App\Http\Middleware\AuthMiddleware;
 
 class ProfileAction
 {
-  public function __invoke(ServerRequestInterface $request)
+  public function __invoke(ServerRequestInterface $request, callable $next = null)
   {
+
     $username = $request->getAttribute(AuthMiddleware::ATTRIBUTE);
     return new HTMLResponse("I'm logged in as $username");
   }

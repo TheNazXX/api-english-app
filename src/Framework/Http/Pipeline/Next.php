@@ -7,22 +7,22 @@ use Psr\Http\Message\ServerRequestInterface;
 class Next
 {
   private $queue;
-  private $default;
+  private $next;
 
-  public function __construct(\SplQueue $queue, callable $default){
+  public function __construct(\SplQueue $queue, callable $next){
     $this->queue = $queue;
-    $this->default = $default;
+    $this->next = $next;
   }
 
   public function __invoke(ServerRequestInterface $request){
 
     if($this->queue->isEmpty()){
-      return ($this->default)($request);
+      return ($this->next)($request);
     }
 
-    $current = $this->queue->dequeue();
+    $middleware = $this->queue->dequeue();
 
-    return $current($request, function(ServerRequestInterface $request){
+    return $middleware($request, function(ServerRequestInterface $request){
       return $this($request);
     });
   }

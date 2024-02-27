@@ -16,6 +16,7 @@ class Pipeline
 
   
   public function __invoke(ServerRequestInterface $request, callable $next){
+
     $delegate = new Next(clone $this->queue, $next);
     return $delegate($request);
   }

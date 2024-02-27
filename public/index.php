@@ -15,6 +15,7 @@ use Framework\Http\Router\Exception\RequestNotMatchedException;
 use Framework\Http\MiddlewareResolver;
 use Framework\Http\Pipeline\Pipeline;
 use Framework\Http\Router\AuraRouterAdapter;
+use Framework\Http\Application;
 
 use App\Http\Actions\HomeAction;
 use App\Http\Actions\AboutAction;
@@ -42,6 +43,8 @@ $timerMiddleware = new TimerMiddleware();
 
 // Initialization
 $request = ServerRequestFactory::fromGlobals();
+$resolver = new MiddlewareResolver();
+$app = new Application($resolver);
 
 // Routing
 $aura = new RouterContainer();
@@ -54,7 +57,7 @@ $map->get('blog', '/blog', Blog\IndexAction::class);
 
 $map->get('profile', '/profile', [
   new AuthMiddleware($params['users']),
-  ProfileAction::class
+  new ProfileAction()
 ]);
 
 
@@ -62,29 +65,24 @@ $map->get('blog_show', '/blog/{id}', new Blog\ShowAction())->tokens(['id' => '\d
 
 
 $router = new AuraRouterAdapter($aura);
-$resolver = new MiddlewareResolver();
 $pipeline  = new Pipeline();
 
-$pipeline->pipe($resolver->resolve(TimerMiddleware::class));
+$app->pipe(TimerMiddleware::class);
 
 try{
   $result = $router->match($request);
-  
+
   foreach($result->getAttributes() as $attribute => $value){
     $request = $request->withAttribute($attribute, $value);
   }
   
-  $handlers = $result->getHandler(); // Массив actions;
-
-  foreach(is_array($handlers) ? $handlers : [$handlers] as $handler){
-    $pipeline->pipe($resolver->resolve($handler));
-  }
-  
-  $response = $pipeline($request, new NotFoundHandler());
+  $handler = $result->getHandler(); // Массив actions;
+ 
+  $app->pipe($handler);
 
 }catch (RequestNotMatchedException $e){}
 
-$response = $pipeline($request, new NotFoundHandler());
+$response = $app($request, new NotFoundHandler());
 
 $emitter = new ResponseSender();
 $emitter->emit($response);
