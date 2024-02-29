@@ -2,26 +2,28 @@
 
 namespace Framework\Http\Pipeline;
 use Psr\Http\Message\ServerRequestInterface;
-use Laminas\Diactoros\Response\JsonResponse;
+use Psr\Http\Message\ResponseInterface;
 use Framework\Http\Pipeline\Next;
 
 
 class Pipeline
 {
-  private $queue;
+  private $queue; 
 
+
+  
   public function __construct(){
     $this->queue = new \SplQueue();
   }
 
   
-  public function __invoke(ServerRequestInterface $request, callable $next){
-
+  public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next){
+  
     $delegate = new Next(clone $this->queue, $next);
-    return $delegate($request);
+    return $delegate($request, $response);
   }
 
-  public function pipe(callable $middleware){
+  public function pipe($middleware){
     $this->queue->enqueue($middleware);
   }
 }

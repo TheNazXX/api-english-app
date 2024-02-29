@@ -1,5 +1,6 @@
 <?php
 
+use Laminas\Diactoros\Response;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\Diactoros\ServerRequestFactory;
@@ -14,6 +15,7 @@ use Framework\Http\Router\RouteCollection;
 use Framework\Http\Router\Exception\RequestNotMatchedException;
 use Framework\Http\MiddlewareResolver;
 use Framework\Http\Pipeline\Pipeline;
+use Framework\Http\Pipeline\PsrHandlerWrapper;
 use Framework\Http\Router\AuraRouterAdapter;
 use Framework\Http\Application;
 
@@ -40,18 +42,18 @@ require_once 'src/App/helpers/funcs.php';
 
 $params = [
   'users' => [
-    'admin' => '123'
+    'admin' => '12345'
   ],
   'debug' => true
 ];
 
-$authMiddleWare = new AuthMiddleware($params['users']);
+// $authMiddleWare = new AuthMiddleware($params['users']);
 $timerMiddleware = new TimerMiddleware();
 
 // Initialization
 $request = ServerRequestFactory::fromGlobals();
 $resolver = new MiddlewareResolver();
-$app = new Application($resolver,  new NotFoundHandler());
+$app = new Application($resolver, new NotFoundHandler());
 
 // Routing
 $aura = new RouterContainer();
@@ -59,22 +61,23 @@ $map = $aura->getMap();
 $router = new AuraRouterAdapter($aura);
 
 $map->get('home', '/', HomeAction::class);
-$map->get('about', '/about', AboutAction::class);
-$map->get('blog', '/blog', Blog\IndexAction::class);
+$map->get('about', '/about', new AboutAction());
+$map->get('blog', '/blog', new Blog\IndexAction());
+
 $map->get('profile', '/profile', [
-  new AuthMiddleware($params['users']),
+  new AuthMiddleware($params['users'], new Response()),
   new ProfileAction()
 ]);
 $map->get('blog_show', '/blog/{id}', new Blog\ShowAction())->tokens(['id' => '\d+']);
 
 $app->pipe(new CatchExceptionMiddleware($params['debug']));
-$app->pipe(TimerMiddleware::class);
 
-$app->pipe(new RouteMiddleware($router, $resolver)); // Определяем маршрут
+
+$app->pipe(new RouteMiddleware($router)); // Определяем маршрут
 $app->pipe(new DispatchMiddleware($resolver)); // Выполняем маршрут
 
 
 // Running //
-$response = $app->run($request);
+$response = $app->run($request, new Response());
 $emitter = new ResponseSender();
 $emitter->emit($response);

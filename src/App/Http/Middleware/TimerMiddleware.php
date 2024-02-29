@@ -11,6 +11,7 @@ class TimerMiddleware
     $start = microtime(true);
     $response = $next($request);
     $end = microtime(true);
+
     return $response->withHeader('X-Timer', $end - $start);
   }
 }

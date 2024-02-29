@@ -7,7 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class HomeAction
 {
-  public function __invoke(ServerRequestInterface $request, callable $next = null)
+  public function __invoke(ServerRequestInterface $request,  callable $next = null)
   {
     $name = $request->getQueryParams()['name'] ?? 'Guest';
     return new HTMLResponse("Hello, $name!");

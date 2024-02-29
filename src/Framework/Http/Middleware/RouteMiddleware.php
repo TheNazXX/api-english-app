@@ -6,7 +6,9 @@ use Psr\Http\Message\ServerRequestInterface;
 
 use Framework\Http\Router\Result;
 use Framework\Http\Router\AuraRouterAdapter;
+use Framework\Http\Router\Exception\RequestNotMatchedException;
 
+use Psr\Http\Message\ResponseInterface;
 use App\Http\Middleware\NotFoundHandler;
 
 class RouteMiddleware
@@ -18,11 +20,13 @@ class RouteMiddleware
   }
 
   public function __invoke(ServerRequestInterface $request, callable $next){
+
+  
     try{
       $result = $this->router->match($request);
 
       foreach($result->getAttributes() as $attribute => $value){
-        $request = $request->witAttribute($attribute, $value);
+        $request = $request->withAttribute($attribute, $value);
       };
 
       return $next($request->withAttribute(Result::class, $result));
