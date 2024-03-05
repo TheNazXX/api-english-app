@@ -22,6 +22,8 @@ use Framework\Http\Application;
 use Framework\Http\Middleware\RouteMiddleware;
 use Framework\Http\Middleware\DispatchMiddleware;
 
+use Framework\Container\Container;
+
 
 use App\Http\Actions\HomeAction;
 use App\Http\Actions\AboutAction;
@@ -38,14 +40,14 @@ chdir(dirname(__DIR__));
 require_once 'vendor/autoload.php';
 require_once 'src/App/helpers/funcs.php';
 
-// Middleware
 
-$params = [
-  'users' => [
-    'admin' => '12345'
-  ],
-  'debug' => true
-];
+$container = new Container();
+
+$container->set('debug', true);
+$container->set('users', [
+  'admin' => '123'
+]);
+
 
 // $authMiddleWare = new AuthMiddleware($params['users']);
 $timerMiddleware = new TimerMiddleware();
@@ -65,12 +67,12 @@ $map->get('about', '/about', new AboutAction());
 $map->get('blog', '/blog', new Blog\IndexAction());
 
 $map->get('profile', '/profile', [
-  new AuthMiddleware($params['users'], new Response()),
+  new AuthMiddleware($container->get('users'), new Response()),
   new ProfileAction()
 ]);
 $map->get('blog_show', '/blog/{id}', new Blog\ShowAction())->tokens(['id' => '\d+']);
 
-$app->pipe(new CatchExceptionMiddleware($params['debug']));
+$app->pipe(new CatchExceptionMiddleware($container->get('debug')));
 
 
 $app->pipe(new RouteMiddleware($router)); // Определяем маршрут
