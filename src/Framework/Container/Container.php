@@ -6,13 +6,13 @@ use Framework\Container\ServiceNotFoundException;
 class Container
 {
   private $definitions = [];
-  private $results = []; // Caсhing
+  private $caching = []; 
 
   public function get($id)
   {
 
-    if(array_key_exists($id, $this->results)){
-      return $this->results[$id];
+    if(array_key_exists($id, $this->caching)){
+      return $this->caching[$id];
     }
 
     if(!array_key_exists($id, $this->definitions)){
@@ -22,18 +22,18 @@ class Container
     $definition = $this->definitions[$id];
 
     if($definition instanceof \Closure){
-      $this->results[$id] = $definition($this);
+      $this->caching[$id] = $definition($this);
     } else{
-      $this->results[$id] = $definition;
+      $this->caching[$id] = $definition;
     }
 
-    return $this->results[$id];
+    return $this->caching[$id];
   }
 
   public function set($id, $value)
   {
-    if(array_key_exists($id, $this->results)){
-      unset($this->results[$id]);
+    if(array_key_exists($id, $this->caching)){
+      unset($this->caching[$id]);
     };
 
     $this->definitions[$id] = $value; 

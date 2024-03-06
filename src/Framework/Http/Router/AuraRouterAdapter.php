@@ -4,10 +4,10 @@ namespace Framework\Http\Router;
 
 use Psr\Http\Message\ServerRequestInterface;
 
-use Framework\Http\Router\Router;
 use Framework\Http\Router\Exception\RequestNotMatchedException;
+use Framework\Http\Router\RouteData;
 
-class AuraRouterAdapter implements RouterInterface
+class AuraRouterAdapter implements Router
 {
   private $aura;
 
@@ -33,6 +33,39 @@ class AuraRouterAdapter implements RouterInterface
     }catch (RouteNotFound $e){
       throw new RouteNotFoundException($name, $params, $e);
     }
+  }
+
+  public function addRoute(RouteData $data): void{
+    $map = $this->aura->getMap();
+    
+    $route = new \Aura\Router\Route();
+
+    $route->name($data->name);
+    $route->path($data->path);
+    $route->handler($data->handler);
+
+    foreach($data->options as $key => $value){
+      switch($key){
+        case 'tokens':
+          $route->tokens($value);
+          break;
+        case 'defaults':
+          $route->defaults($value);
+          break;
+        case 'wildcard':
+          $route->wildcard($value);
+          break;
+        default: 
+          throw new \InvalidArgumentException('Undefined option "' . $key .'"');
+      }  
+    }
+
+    if($data->methods){
+      $route->allows($data->methods);
+    }
+
+    $map->addRoute($route);
+    
   }
 
 }

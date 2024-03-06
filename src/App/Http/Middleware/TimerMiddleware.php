@@ -7,7 +7,7 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class TimerMiddleware
 {
-  public function __invoke(ServerRequestInterface $request, $next){
+  public function __invoke(ServerRequestInterface $request, callable $next){
     $start = microtime(true);
     $response = $next($request);
     $end = microtime(true);
