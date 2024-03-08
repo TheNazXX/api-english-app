@@ -8,7 +8,7 @@ use Laminas\Diactoros\Uri;
 
 use Framework\Http\Router\Exception\RequestNotMatchedException;
 
-use Framework\Http\Router\Router;
+use Framework\Http\Router\MyRouter;
 use Framework\Http\Router\RouteCollection;
 
 class RouterTest extends TestCase
@@ -20,7 +20,7 @@ class RouterTest extends TestCase
     $map->get('home', '/', $handler_get_home = 'handler_get');
     $map->get('blog', '/blog', $handler_get_blog = 'handler_get');
 
-    $router = new Router($map);
+    $router = new MyRouter($map);
     $result = $router->match($this->buildRequest('GET', '/'));
 
     self::assertEquals('home', $result->getName());
@@ -33,7 +33,7 @@ class RouterTest extends TestCase
 
     $map->get('home', '/', $handler_get_home = 'handler_get');
 
-    $router = new Router($map);
+    $router = new MyRouter($map);
 
     $this->expectException(RequestNotMatchedException::class);
     $router->match($this->buildRequest("DELETE", '/'));
@@ -46,7 +46,7 @@ class RouterTest extends TestCase
     $map->get($name = 'posts', '/posts/{id}', $handler_get_home = 'handler_get', ["id" => "\d+"]);
 
 
-    $router = new Router($map);
+    $router = new MyRouter($map);
     $result = $router->match($this->buildRequest("GET", '/posts/5'));
 
     self::assertEquals($name, $result->getName());
@@ -67,7 +67,7 @@ class RouterTest extends TestCase
     $map = new RouteCollection();
 
     $map->get($name = 'blog_show', '/blog/{id}', $handler_get_home = 'handler_get', ['id' => '\d+']);
-    $router = new Router($map);
+    $router = new MyRouter($map);
 
     self::assertEquals('/blog/5', $router->generate($name, ['id' => 5]));
   }

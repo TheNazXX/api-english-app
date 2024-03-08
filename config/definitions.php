@@ -18,48 +18,26 @@ use App\Http\Middleware\TimerMiddleware;
 use App\Http\Middleware\NotFoundHandler;
 use App\Http\Middleware\CatchExceptionMiddleware;
 
+use App\Http\Actions\HomeAction;
 
-$container->set(Application::class, function(Container $container){
-  return new Application(
-    $container->get(MiddlewareResolver::class), 
-    $container->get(Router::class),
-    $container->get(NotFoundHandler::class)
-  );
-});
-
-
-$container->set(NotFoundHandler::class, function(){
-  return new NotFoundHandler();
-});
-
-$container->set(AuthMiddleware::class, function(Container $container){
-  return new AuthMiddleware($container->get('config')['users'], new Response());
-});
-
-
-
-$container->set(CatchExceptionMiddleware::class, function(Container $container){
-  return new CatchExceptionMiddleware($container->get('config')['debug']);
-});
-
-$container->set(TimerMiddleware::class, function(){
-  return new TimerMiddleware();
-});
-
-$container->set(MiddlewareResolver::class, function(){
-  return new MiddlewareResolver();
-});
-
-
-$container->set(RouteMiddleware::class, function(Container $container){
-  return new RouteMiddleware($container->get(Router::class));
-});
-
-
-$container->set(DispatchMiddleware::class, function(Container $container){
-  return new DispatchMiddleware($container->get(MiddlewareResolver::class));
-});
-
-$container->set(Router::class, function(Container $container){
-  return new AuraRouterAdapter(new RouterContainer());
-});
+return [
+  Application::class => function(Container $container){
+    return new Application(
+      $container->get(MiddlewareResolver::class), 
+      $container->get(Router::class),
+      $container->get(NotFoundHandler::class)
+    );
+  },
+  AuthMiddleware::class => function(Container $container){
+    return new AuthMiddleware($container->get('config')['users'], new Response());
+  },
+  MiddlewareResolver::class => function(Container $container){
+    return new MiddlewareResolver($container);
+  },
+  Router::class => function(Container $container){ // !!! (Имя - интерфейс, контейнер не обеспечит автоматически класс этой зависимостью т.к он работает только с классами)
+    return new AuraRouterAdapter(new RouterContainer());
+  },
+  RouteMiddleware::class => function(Container $container){ // !!!
+    return new RouteMiddleware($container->get(Router::class));
+  }
+];

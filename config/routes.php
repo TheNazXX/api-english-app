@@ -8,12 +8,12 @@ use App\Http\Actions\ProfileAction;
 use App\Http\Middleware\AuthMiddleware;
 
 $app->get('home', '/', HomeAction::class);
-$app->get('about', '/about', new AboutAction());
-$app->get('blog', '/blog', new Blog\IndexAction());
+$app->get('about', '/about', AboutAction::class);
+$app->get('blog', '/blog', Blog\IndexAction::class);
 
 $app->get('profile', '/profile', [
   $container->get(AuthMiddleware::class),
   new ProfileAction()
 ]);
 
-$app->get('blog_show', '/blog/{id}', new Blog\ShowAction(), ['tokens' => ['id' => '\d+']]);
+$app->get('blog_show', '/blog/{id}', Blog\ShowAction::class, ['tokens' => ['id' => '\d+']]);

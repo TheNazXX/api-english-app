@@ -2,7 +2,7 @@
 
 use Framework\Container\Container;
 
-$container = new Container();
+$container = new Container(require 'config/definitions.php');
 $container->set('config', require 'config/parameters.php');
 
-require 'config/definitions.php';
+return $container;

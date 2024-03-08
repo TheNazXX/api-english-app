@@ -1,22 +1,57 @@
 <?php
 
 namespace Framework\Container;
+
+use Psr\Container\ContainerInterface;
 use Framework\Container\ServiceNotFoundException;
 
-class Container
+class Container implements ContainerInterface
 {
   private $definitions = [];
-  private $caching = []; 
+  private $caching = [];
+
+
+  public function __construct(array $definitions = []){
+    $this->definitions = $definitions;
+  }
 
   public function get($id)
   {
+
 
     if(array_key_exists($id, $this->caching)){
       return $this->caching[$id];
     }
 
     if(!array_key_exists($id, $this->definitions)){
-      throw new ServiceNotFoundException('Undefined parameter"'. $id .'"');
+      if(class_exists($id)){
+        $reflection = new \ReflectionClass($id);
+
+        $arguments = [];
+
+        if(($constructor = $reflection->getConstructor()) !== null){
+          
+          foreach($constructor->getParameters() as $param){
+            if($param->getType() instanceof \ReflectionNamedType && !$param->getType()->isBuiltin()){  // Если тип является именованным типом (классом)
+              $arguments[] = $this->get($param->getType()->getName());   
+            }else if($param->getType() && $param->getType()->getName() === "array"){
+   
+              $arguments[] = [];
+            }else{
+              if(!$param->isDefaultValueAvailable()){
+                throw new ServiceNotFoundException('Unable to resolve"'. $param->getName() .'"" in service'. $id .'"');
+              }
+
+              $arguments[] = $param->getDefaultValue();
+            }
+          }
+        }
+        
+        $result = $reflection->newInstanceArgs($arguments);
+        return $this->caching[$id] =  $result;
+      }
+
+      throw new ServiceNotFoundException('Unknow service "'. $id .'"');
     }
 
     $definition = $this->definitions[$id];
@@ -37,5 +72,9 @@ class Container
     };
 
     $this->definitions[$id] = $value; 
+  }
+
+  public function has($id): bool {
+    return array_key_exists($id, $this->definitions) || class_exists($id); 
   }
 }

@@ -6,6 +6,7 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\MiddlewareInterface;
 
+use Psr\Container\ContainerInterface;
 use Framework\Http\Pipeline\PsrHandlerWrapper;
 use Framework\Http\Pipeline\UnknownMiddleware;
 
@@ -13,16 +14,23 @@ use Framework\Http\Pipeline\Pipeline;
 
 class MiddlewareResolver
 {
+
+  private $container;
+
+  public function __construct(ContainerInterface $container){
+    $this->container = $container;
+  }
+
   public function resolve($handler): callable
   {
     if(\is_array($handler)){
       return $this->createPipe($handler);
     };
 
-    if(\is_string($handler)){
+    if(\is_string($handler) && $this->container->has($handler)){
 
       return function(ServerRequestInterface $request, ResponseInterface $response, callable $next) use ($handler){
-        $middleware = $this->resolve(new $handler());
+        $middleware = $this->resolve($this->container->get($handler));
         return $middleware($request, $response, $next);
       };
     };

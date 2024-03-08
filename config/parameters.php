@@ -3,6 +3,6 @@
 return [
   'debug' => true,
   'users' => [
-    'admin' => '1234'
+    'admin' => '123'
   ]
 ];

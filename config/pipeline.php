@@ -7,8 +7,8 @@ use App\Http\Middleware\TimerMiddleware;
 use App\Http\Middleware\CatchExceptionMiddleware;
 
 
-$app->pipe($container->get(CatchExceptionMiddleware::class));
-$app->pipe($container->get(TimerMiddleware::class));
+$app->pipe(CatchExceptionMiddleware::class);
+$app->pipe(TimerMiddleware::class);
 
-$app->pipe($container->get(RouteMiddleware::class));
-$app->pipe($container->get(DispatchMiddleware::class));
+$app->pipe(RouteMiddleware::class);
+$app->pipe(DispatchMiddleware::class);

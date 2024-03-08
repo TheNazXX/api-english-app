@@ -11,7 +11,7 @@ use Framework\Http\Router\Exception\RequestNotMatchedException;
 use Framework\Http\Router\Exception\RouteNotFoundException;
 
 
-class Router
+class MyRouter
 {
 
   private $map;

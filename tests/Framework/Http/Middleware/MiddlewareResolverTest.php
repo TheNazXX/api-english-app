@@ -3,6 +3,7 @@
 namespace Tests\Framework\Http\Middlware;
 
 use PHPUnit\Framework\TestCase;
+use Framework\Container\Container;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -28,7 +29,7 @@ class MiddlewareResolverTest extends TestCase
 
   public function testDirect($handler)
   {
-    $resolver = new MiddlewareResolver();
+    $resolver = new MiddlewareResolver(new DummyContainer());
     $middleware = $resolver->resolve($handler);
 
     $response = $middleware(
@@ -48,7 +49,7 @@ class MiddlewareResolverTest extends TestCase
 
   public function testNext($handler)
   {
-    $resolver = new MiddlewareResolver();
+    $resolver = new MiddlewareResolver(new DummyContainer());
     $middleware = $resolver->resolve($handler);
 
     $response = $middleware(
@@ -90,7 +91,7 @@ class MiddlewareResolverTest extends TestCase
   
 
   public function testArray(){
-    $resolver = new MiddlewareResolver();
+    $resolver = new MiddlewareResolver(new DummyContainer());
     $middleware = $resolver->resolve([
       new DummyMiddleware(),
       new CallableMiddleware()
@@ -157,5 +158,20 @@ class DummyMiddleware
 {
   public function __invoke(ServerRequestInterface $request, callable $next): ResponseInterface{
     return $next($request)->withHeader('X-Dummy', 'dummy');
+  }
+}
+
+class DummyContainer extends Container
+{
+  public function get($id){
+    if(!class_exists($id)){
+      throw new ServiceNotFoundException($id);
+    }
+
+    return new $id();
+  } 
+
+  public function has($id): bool{
+    return class_exists($id);
   }
 }
