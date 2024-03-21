@@ -17,6 +17,7 @@ use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\TimerMiddleware;
 use App\Http\Middleware\NotFoundHandler;
 use App\Http\Middleware\CatchExceptionMiddleware;
+use App\DB;
 
 use App\Http\Actions\HomeAction;
 
@@ -27,6 +28,9 @@ return [
       $container->get(Router::class),
       $container->get(NotFoundHandler::class)
     );
+  },
+  CatchExceptionMiddleware::class => function(Container $container){
+    return new CatchExceptionMiddleware($container->get('config')['debug']);
   },
   AuthMiddleware::class => function(Container $container){
     return new AuthMiddleware($container->get('config')['users'], new Response());
@@ -39,5 +43,8 @@ return [
   },
   RouteMiddleware::class => function(Container $container){ // !!!
     return new RouteMiddleware($container->get(Router::class));
+  },
+  DB::class => function(Container $container){
+    return DB::getInstance()->getConnection($container->get('config')['db_config']);
   }
 ];

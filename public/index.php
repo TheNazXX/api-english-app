@@ -1,11 +1,11 @@
 <?php
 
-
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\ServerRequestFactory;
 
 use Framework\Http\Application;
 use Framework\Http\ResponseSender;
+
 
 chdir(dirname(__DIR__));
 
